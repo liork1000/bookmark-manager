@@ -1,4 +1,5 @@
 const STORAGE_KEY = 'bookmarks_v1';
+const LAST_CATEGORY_KEY = 'last_category';
 
 function loadBookmarks() {
   try {
@@ -10,6 +11,21 @@ function loadBookmarks() {
 
 function saveBookmarks(bookmarks) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(bookmarks));
+}
+
+function loadLastCategory() {
+  return localStorage.getItem(LAST_CATEGORY_KEY) || '';
+}
+
+function saveLastCategory(category) {
+  if (category) localStorage.setItem(LAST_CATEGORY_KEY, category);
+}
+
+function updateCategoriesDatalist() {
+  const bookmarks = loadBookmarks();
+  const categories = [...new Set(bookmarks.map(b => b.category).filter(Boolean))];
+  const datalist = document.getElementById('categories-datalist');
+  datalist.innerHTML = categories.map(c => `<option value="${escapeHtml(c)}"></option>`).join('');
 }
 
 function getFavicon(url) {
@@ -38,7 +54,8 @@ function renderBookmarks(filter = '') {
     ? bookmarks.filter(b =>
         b.name.toLowerCase().includes(filter) ||
         b.desc.toLowerCase().includes(filter) ||
-        b.url.toLowerCase().includes(filter)
+        b.url.toLowerCase().includes(filter) ||
+        (b.category || '').toLowerCase().includes(filter)
       )
     : bookmarks;
 
@@ -66,6 +83,7 @@ function renderBookmarks(filter = '') {
       <div class="bookmark-item" data-id="${b.id}">
         <div class="bookmark-favicon">${faviconHtml}</div>
         <div class="bookmark-info">
+          ${b.category ? `<span class="bookmark-category">${escapeHtml(b.category)}</span>` : ''}
           <div class="bookmark-name" title="${escapeHtml(b.name)}">${escapeHtml(b.name)}</div>
           ${b.desc ? `<div class="bookmark-desc">${escapeHtml(b.desc)}</div>` : ''}
           <a class="bookmark-url" href="${safeUrl}" target="_blank" rel="noopener noreferrer">${escapeHtml(displayUrl)}</a>
@@ -83,6 +101,7 @@ function addBookmark() {
   const name = document.getElementById('input-name').value.trim();
   const url = document.getElementById('input-url').value.trim();
   const desc = document.getElementById('input-desc').value.trim();
+  const category = document.getElementById('input-category').value.trim();
 
   if (!name) { showToast('נא להזין שם לסימנייה', true); return; }
   if (!url) { showToast('נא להזין כתובת URL', true); return; }
@@ -96,14 +115,16 @@ function addBookmark() {
   }
 
   const bookmarks = loadBookmarks();
-  bookmarks.unshift({ id: Date.now().toString(), name, url: normalizedUrl, desc });
+  bookmarks.unshift({ id: Date.now().toString(), name, url: normalizedUrl, desc, category });
   saveBookmarks(bookmarks);
+  saveLastCategory(category);
 
   document.getElementById('input-name').value = '';
   document.getElementById('input-url').value = '';
   document.getElementById('input-desc').value = '';
   document.getElementById('search-box').value = '';
 
+  updateCategoriesDatalist();
   renderBookmarks();
   showToast('הסימנייה נוספה בהצלחה ✓');
 }
@@ -131,4 +152,6 @@ document.getElementById('search-box').addEventListener('input', e => {
   renderBookmarks(e.target.value.trim().toLowerCase());
 });
 
+document.getElementById('input-category').value = loadLastCategory();
+updateCategoriesDatalist();
 renderBookmarks();

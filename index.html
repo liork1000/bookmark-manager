@@ -67,7 +67,8 @@
     }
 
     .form-group input,
-    .form-group textarea {
+    .form-group textarea,
+    .form-group select {
       width: 100%;
       background: #0f172a;
       border: 1px solid #334155;
@@ -81,7 +82,8 @@
     }
 
     .form-group input:focus,
-    .form-group textarea:focus {
+    .form-group textarea:focus,
+    .form-group select:focus {
       outline: none;
       border-color: #7c3aed;
     }
@@ -89,6 +91,19 @@
     .form-group input::placeholder,
     .form-group textarea::placeholder {
       color: #475569;
+    }
+
+    .form-group select option { background: #1e293b; }
+
+    .bookmark-category {
+      display: inline-block;
+      font-size: 0.72rem;
+      color: #7c3aed;
+      background: #7c3aed18;
+      border: 1px solid #7c3aed44;
+      border-radius: 999px;
+      padding: 0.1rem 0.5rem;
+      margin-bottom: 0.3rem;
     }
 
     .btn-add {
@@ -280,6 +295,11 @@
         <div>
           <label for="input-desc">תיאור קצר</label>
           <textarea id="input-desc" rows="2" placeholder="מה האתר הזה עושה?" maxlength="200"></textarea>
+        </div>
+        <div>
+          <label for="input-category">קטגוריה</label>
+          <input type="text" id="input-category" placeholder="למשל: כלים, חדשות, מדיה..." list="categories-datalist" maxlength="40" />
+          <datalist id="categories-datalist"></datalist>
         </div>
         <button class="btn-add" id="btn-add">+ הוסף סימנייה</button>
         <div class="toast" id="toast"></div>
