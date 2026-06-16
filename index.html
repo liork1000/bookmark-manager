@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>מנהל סימניות</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #0f172a;
+      color: #e2e8f0;
+      min-height: 100vh;
+      padding: 2rem 1rem;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 2.5rem;
+    }
+
+    header h1 {
+      font-size: 2rem;
+      font-weight: 700;
+      color: #7c3aed;
+      letter-spacing: 0.5px;
+    }
+
+    header p {
+      color: #94a3b8;
+      margin-top: 0.4rem;
+      font-size: 0.95rem;
+    }
+
+    .container {
+      max-width: 720px;
+      margin: 0 auto;
+    }
+
+    .card {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 16px;
+      padding: 1.75rem;
+      margin-bottom: 2rem;
+    }
+
+    .card h2 {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: #cbd5e1;
+      margin-bottom: 1.25rem;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .form-group label {
+      font-size: 0.85rem;
+      color: #94a3b8;
+      margin-bottom: 0.25rem;
+      display: block;
+    }
+
+    .form-group input,
+    .form-group textarea {
+      width: 100%;
+      background: #0f172a;
+      border: 1px solid #334155;
+      border-radius: 10px;
+      padding: 0.7rem 1rem;
+      color: #e2e8f0;
+      font-size: 0.95rem;
+      font-family: inherit;
+      transition: border-color 0.2s;
+      resize: none;
+    }
+
+    .form-group input:focus,
+    .form-group textarea:focus {
+      outline: none;
+      border-color: #7c3aed;
+    }
+
+    .form-group input::placeholder,
+    .form-group textarea::placeholder {
+      color: #475569;
+    }
+
+    .btn-add {
+      width: 100%;
+      margin-top: 0.5rem;
+      padding: 0.75rem;
+      background: #7c3aed;
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .btn-add:hover { background: #6d28d9; }
+    .btn-add:active { background: #5b21b6; }
+
+    .toast {
+      display: none;
+      background: #10b981;
+      color: #fff;
+      padding: 0.6rem 1rem;
+      border-radius: 8px;
+      font-size: 0.88rem;
+      margin-top: 0.75rem;
+      text-align: center;
+    }
+
+    .toast.error { background: #ef4444; }
+    .toast.show { display: block; }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1rem;
+    }
+
+    .section-header h2 {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: #cbd5e1;
+    }
+
+    .count-badge {
+      background: #334155;
+      color: #94a3b8;
+      font-size: 0.8rem;
+      padding: 0.2rem 0.6rem;
+      border-radius: 999px;
+    }
+
+    .search-box {
+      width: 100%;
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 10px;
+      padding: 0.65rem 1rem;
+      color: #e2e8f0;
+      font-size: 0.92rem;
+      font-family: inherit;
+      margin-bottom: 1rem;
+      transition: border-color 0.2s;
+    }
+
+    .search-box:focus { outline: none; border-color: #7c3aed; }
+    .search-box::placeholder { color: #475569; }
+
+    #bookmarks-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.85rem;
+    }
+
+    .bookmark-item {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 12px;
+      padding: 1rem 1.25rem;
+      display: flex;
+      align-items: flex-start;
+      gap: 1rem;
+      transition: border-color 0.2s;
+    }
+
+    .bookmark-item:hover { border-color: #7c3aed44; }
+
+    .bookmark-favicon {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      background: #334155;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      font-size: 1.1rem;
+      overflow: hidden;
+    }
+
+    .bookmark-favicon img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+
+    .bookmark-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .bookmark-name {
+      font-weight: 600;
+      font-size: 0.97rem;
+      color: #f1f5f9;
+      margin-bottom: 0.2rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .bookmark-desc {
+      font-size: 0.82rem;
+      color: #94a3b8;
+      margin-bottom: 0.4rem;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .bookmark-url {
+      font-size: 0.78rem;
+      color: #7c3aed;
+      text-decoration: none;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      display: block;
+    }
+
+    .bookmark-url:hover { text-decoration: underline; }
+
+    .btn-delete {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: #475569;
+      padding: 0.3rem;
+      border-radius: 6px;
+      transition: color 0.2s, background 0.2s;
+      flex-shrink: 0;
+      font-size: 1.1rem;
+      line-height: 1;
+    }
+
+    .btn-delete:hover { color: #ef4444; background: #ef444415; }
+
+    .empty-state {
+      text-align: center;
+      color: #475569;
+      padding: 2.5rem 0;
+      font-size: 0.95rem;
+    }
+
+    .empty-state span { display: block; font-size: 2rem; margin-bottom: 0.5rem; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>&#128278; מנהל סימניות</h1>
+      <p>שמור, נהל ועיין בסימניות שלך בקלות</p>
+    </header>
+
+    <div class="card">
+      <h2>הוסף סימנייה חדשה</h2>
+      <div class="form-group">
+        <div>
+          <label for="input-name">שם</label>
+          <input type="text" id="input-name" placeholder="למשל: Google" maxlength="80" />
+        </div>
+        <div>
+          <label for="input-url">כתובת URL</label>
+          <input type="url" id="input-url" placeholder="https://example.com" />
+        </div>
+        <div>
+          <label for="input-desc">תיאור קצר</label>
+          <textarea id="input-desc" rows="2" placeholder="מה האתר הזה עושה?" maxlength="200"></textarea>
+        </div>
+        <button class="btn-add" id="btn-add">+ הוסף סימנייה</button>
+        <div class="toast" id="toast"></div>
+      </div>
+    </div>
+
+    <div>
+      <div class="section-header">
+        <h2>הסימניות שלי</h2>
+        <span class="count-badge" id="count-badge">0</span>
+      </div>
+      <input type="text" class="search-box" id="search-box" placeholder="&#128269; חפש סימנייה..." />
+      <div id="bookmarks-list"></div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
